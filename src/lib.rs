@@ -1,9 +1,11 @@
 use rand::{self, seq::SliceRandom};
 use std::collections::HashMap;
+use textwrap::{fill, Options};
 
 const EMPTY: &str = "";
+const COLUMN_WIDTH: usize = 70;
 
-pub fn markov_chain(text: String, number_words: i32) -> Vec<String> {
+pub fn markov_chain(text: String, number_of_words: i32) -> String {
     let mut word_1 = EMPTY;
     let mut word_2 = EMPTY;
 
@@ -13,10 +15,10 @@ pub fn markov_chain(text: String, number_words: i32) -> Vec<String> {
     for line in text.lines() {
         for word in line.split_whitespace() {
             let entry = possibles.entry((word_1, word_2)).or_insert(vec![]);
-            entry.push(word.trim());
+            entry.push(word);
 
             word_1 = word_2;
-            word_2 = word.trim();
+            word_2 = word;
         }
     }
 
@@ -50,20 +52,20 @@ pub fn markov_chain(text: String, number_words: i32) -> Vec<String> {
     let mut output = vec![word_1, word_2];
 
     // Fill the output vector
-    for _ in 0..number_words {
+    for _ in 0..number_of_words {
         match possibles.get(&(word_1, word_2)) {
             Some(words) => {
                 let word = words.choose(&mut rand::thread_rng()).unwrap();
 
                 output.push(*word);
                 word_1 = word_2;
-                word_2 = word;
+                word_2 = *word;
             }
             None => {}
         }
     }
 
-    output.iter().map(|&word| word.to_string()).collect()
+    fill(&output.join(" "), Options::new(COLUMN_WIDTH))
 }
 
 #[cfg(test)]
@@ -75,19 +77,20 @@ mod tests {
         let text = String::from("Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa.");
         let number_words = 10;
 
-        let result = markov_chain(text.clone(), number_words);
+        let actual = markov_chain(text.clone(), number_words);
+        let words = actual.split_ascii_whitespace().collect::<Vec<&str>>();
 
-        assert_eq!(result.len(), number_words as usize + 2);
+        assert_eq!(words.len(), number_words as usize + 2);
 
-        for word in &result {
+        for word in &words {
             assert!(
                 text.contains(word),
                 "The output contains a word not present in the input text: {}",
-                word
+                &word
             );
         }
 
-        for window in result.windows(2) {
+        for window in words.windows(2) {
             let phrase = format!("{} {}", window[0], window[1]);
 
             assert!(

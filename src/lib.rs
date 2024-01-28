@@ -5,6 +5,22 @@ use textwrap::{fill, Options};
 const EMPTY: &str = "";
 const COLUMN_WIDTH: usize = 70;
 
+/// Generates a Markov chain based on the input text and returns a string of generated words.
+///
+/// # Arguments
+///
+/// * `text` - The input text used to generate the Markov chain.
+/// * `number_of_words` - The number of words to generate in the Markov chain.
+///
+/// # Examples
+///
+/// ```
+/// let text = String::from("Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa.");
+/// let number_words = 10;
+///
+/// let result = markov_chain(text, number_words);
+/// println!("{}", result);
+/// ```
 pub fn markov_chain(text: String, number_of_words: i32) -> String {
     let mut word_1 = EMPTY;
     let mut word_2 = EMPTY;
